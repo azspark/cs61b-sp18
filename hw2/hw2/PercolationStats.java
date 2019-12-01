@@ -1,10 +1,8 @@
 package hw2;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
-import java.lang.Math;
 
 public class PercolationStats {
-    private int n;
     private double mean;
     private double stddev;
     private double confiLow;
@@ -12,6 +10,9 @@ public class PercolationStats {
     private double[] percolationValues;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
+        if (N <= 0) {
+            throw new java.lang.IllegalArgumentException();
+        }
         percolationValues = new double[T];
         for (int i = 0; i < T; i++) {
             percolationValues[i] = onePerlocationExp(pf.make(N), N);
@@ -46,6 +47,6 @@ public class PercolationStats {
             }
             pl.open(randomRow, randomCol);
         }
-        return count;
+        return count / (N * N);
     }
 }

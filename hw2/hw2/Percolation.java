@@ -93,7 +93,7 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        return uf.find(0) == uf.find(n * n - 1);
+        return numOpen >= n && uf.find(0) == uf.find(n * n - 1);
     }
 
     public static void main(String[] args) {
