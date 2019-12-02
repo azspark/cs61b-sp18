@@ -5,6 +5,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
     private int numOpen;
     private WeightedQuickUnionUF uf;
+    private WeightedQuickUnionUF isfullUF;
     private boolean[] openRecord;
     private int n;
     public Percolation(int N) {
@@ -13,10 +14,12 @@ public class Percolation {
         }
         this.n = N;
         uf = new WeightedQuickUnionUF(N * N);
+        isfullUF = new WeightedQuickUnionUF(N * N);
         openRecord = new boolean[N * N];
         // union the first row
         for (int i = 1; i < N; i++) {
             uf.union(0, i);
+            isfullUF.union(0, i);
         }
         //union the last row
         for (int i = N * N - N; i < N * N - 1; i++) {
@@ -45,24 +48,28 @@ public class Percolation {
             int upIndex = curIndex - n;
             if (openRecord[upIndex]) {
                 uf.union(upIndex, curIndex);
+                isfullUF.union(upIndex, curIndex);
             }
         }
         if (row < n - 1) {
             int downIndex = curIndex + n;
             if (openRecord[downIndex]) {
                 uf.union(downIndex, curIndex);
+                isfullUF.union(downIndex, curIndex);
             }
         }
         if (col > 0) {
             int leftIndex = curIndex - 1;
             if (openRecord[leftIndex]) {
                 uf.union(leftIndex, curIndex);
+                isfullUF.union(leftIndex, curIndex);
             }
         }
         if (col < n - 1) {
             int rightIndex = curIndex + 1;
             if (openRecord[rightIndex]) {
                 uf.union(rightIndex, curIndex);
+                isfullUF.union(rightIndex, curIndex);
             }
         }
         numOpen += 1;
@@ -85,7 +92,7 @@ public class Percolation {
         if (row < 0 || row >= n || col < 0 || col >= n) {
             throw new java.lang.IndexOutOfBoundsException();
         }
-        return isOpen(row, col) && uf.find(0) == uf.find(row * n + col);
+        return isOpen(row, col) && isfullUF.find(0) == isfullUF.find(row * n + col);
     }
 
     public int numberOfOpenSites() {
