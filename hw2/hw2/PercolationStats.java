@@ -10,7 +10,7 @@ public class PercolationStats {
     private double[] percolationValues;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
-        if (N <= 0) {
+        if (N <= 0 || T <= 0) {
             throw new java.lang.IllegalArgumentException();
         }
         percolationValues = new double[T];
@@ -19,8 +19,8 @@ public class PercolationStats {
         }
         mean = StdStats.mean(percolationValues);
         stddev = StdStats.stddev(percolationValues);
-        confiHigh = mean - (1.96 * stddev) / Math.sqrt(T);
-        confiLow = confiHigh = mean + (1.96 * stddev) / Math.sqrt(T);
+        confiHigh = mean + (1.96 * stddev) / Math.sqrt(T);
+        confiLow = mean - (1.96 * stddev) / Math.sqrt(T);
     }
     public double mean() {
         return mean;
