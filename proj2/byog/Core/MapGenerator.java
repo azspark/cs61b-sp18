@@ -10,7 +10,7 @@ public class MapGenerator {
     private int height;
     private TETile[][] world;
     private Vector<Room> worldRooms;
-    private static final int roomGenerateTimes = 50;
+    private static final int roomGenerateTimes = 80;
 
     MapGenerator (String seed, int width, int height) {
         initWorld(width, height);

@@ -14,7 +14,7 @@ public class Room {
     public Position position; // left bottom position
     private Random RANDOM;
     private int maxSize;
-    private static final int minSize = 4;
+    private static final int minSize = 3;
 
 
     Room (Random RANDOM, int worldWidth, int worldHeight) {
