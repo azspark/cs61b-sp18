@@ -19,6 +19,8 @@ public class MapGenerator {
         RANDOM = new Random(parseStringSeed(seed));
         worldRooms = new Vector<>();
         generateRooms();
+        //test
+        connectRooms();
     }
 
     public static long parseStringSeed(String seed) {
@@ -46,6 +48,12 @@ public class MapGenerator {
                 worldRooms.add(candidateRoom);
                 candidateRoom.drawOnWorld(world);
             }
+        }
+    }
+
+    private void connectRooms() {
+        for (int i = 0; i < worldRooms.size() / 5; i++) {
+            worldRooms.get(i).connect(world, worldRooms.get(i + 1));
         }
     }
 
