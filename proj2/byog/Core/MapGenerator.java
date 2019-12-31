@@ -10,16 +10,15 @@ public class MapGenerator {
     private int height;
     private TETile[][] world;
     private Vector<Room> worldRooms;
-    private static final int roomGenerateTimes = 80;
+    private static final int ROOM_GENERATE_TIMES = 90;
 
-    MapGenerator (String seed, int width, int height) {
-        initWorld(width, height);
+    MapGenerator(String seed, int width, int height) {
         this.width = width;
         this.height = height;
+        initWorld();
         RANDOM = new Random(parseStringSeed(seed));
         worldRooms = new Vector<>();
         generateRooms();
-        //test
         connectRooms();
     }
 
@@ -32,7 +31,7 @@ public class MapGenerator {
         return Long.parseLong(seed);
     }
 
-    private void initWorld(int width, int height) {
+    private void initWorld() {
         world = new TETile[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -42,7 +41,7 @@ public class MapGenerator {
     }
 
     private void generateRooms() {
-        for (int i = 0; i < roomGenerateTimes; i++) {
+        for (int i = 0; i < ROOM_GENERATE_TIMES; i++) {
             Room candidateRoom = new Room(RANDOM, width, height);
             if (candidateRoom.canPutInWorld(worldRooms)) {
                 worldRooms.add(candidateRoom);
@@ -52,8 +51,14 @@ public class MapGenerator {
     }
 
     private void connectRooms() {
-        for (int i = 0; i < worldRooms.size() / 5; i++) {
-            worldRooms.get(i).connect(world, worldRooms.get(i + 1));
+        MST mst = new MST(worldRooms);
+        int[] connectTo = mst.getEdgeTo();
+        for (int i = 1; i < connectTo.length; i++) {
+            worldRooms.get(i).connect(world, worldRooms.get(connectTo[i]));
+        }
+
+        for (int i = 0; i < worldRooms.size(); i++) {
+            worldRooms.get(i).drawRoomInnerSpaceOnWorld(world);
         }
     }
 

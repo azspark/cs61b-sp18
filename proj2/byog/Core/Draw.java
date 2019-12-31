@@ -16,6 +16,10 @@ public class Draw {
         drawVerticalWall(world, p.shift(width - 1, 1), height - 2);
     }
 
+    public static void drawRoomInnerSpace(TETile[][] world, Position p, int width, int height) {
+        drawRectangleSpace(world, p.shift(1, 1), width - 2, height - 2);
+    }
+
     /**
      * Draw a Hallway which only support straight hallway and hallway with one turn
      *
@@ -36,7 +40,7 @@ public class Draw {
     }
 
     public static void drawLShapeHallway(TETile [][] world, Position start, Position end, int direction) {
-        // This function is not good written
+        // This function is not written well
         if (direction == 0 || direction == 2) {
             int upDownAdd = (direction == 0) ? 2: -2;
             Position middle = new Position(start.x, end.y + upDownAdd);

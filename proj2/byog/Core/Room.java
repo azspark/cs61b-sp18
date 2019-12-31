@@ -9,14 +9,15 @@ import java.util.Random;
 public class Room {
     public int x;
     public int y;
-    public int height;
-    public int width;
+    public int height;        // including wall
+    public int width;         // including wall
     public int worldWidth;
     public int worldHeight;
     public Position position; // left bottom position
     private Random RANDOM;
     private int maxSize;
-    private static final int minSize = 3;
+    private static final int minSize = 4;
+    private double middleX, middleY; // middle position of room, used in Minimum Spanning Tree
 
     private ArrayList<Position> upFloorEdge;
     private ArrayList<Position> downFloorEdge;
@@ -37,6 +38,8 @@ public class Room {
     public void drawOnWorld(TETile[][] world) {
         Draw.drawRoom(world, position, width, height);
     }
+
+    public void drawRoomInnerSpaceOnWorld(TETile[][] world) {Draw.drawRoomInnerSpace(world, position, width, height);}
 
     public boolean canPutInWorld(Vector<Room> rooms) {
         for (Room room: rooms) {
@@ -62,6 +65,8 @@ public class Room {
     private void randomGenerateSize() {
         height = RandomUtils.uniform(RANDOM,  minSize, Math.min(maxSize, worldHeight - position.y) + 1);
         width = RandomUtils.uniform(RANDOM,  minSize, Math.min(maxSize, worldWidth - position.x) + 1);
+        middleX = (double) position.x + ((double) width - 1) / 2;
+        middleY = (double) position.y + ((double) height - 1) / 2;
     }
 
     private void initFloorEdge() {
@@ -112,7 +117,8 @@ public class Room {
         } else {
             // If two rooms are left and right and can connect with straight line
             int connectedY = sampleCommonSequence(RANDOM, position.y + 1,
-                    position.y + height - 2, room.position.y + 1, room.position.y + room.height - 2);
+                    position.y + height - 2, room.position.y + 1,
+                    room.position.y + room.height - 2);
             if (connectedY != -1) {
                 if (position.x > room.position.x) {
                     from = new Position(leftFloorEdge.get(0).x, connectedY);
@@ -186,6 +192,14 @@ public class Room {
     private Position randomChoicePosition(Random RANDOM, ArrayList<Position> side) {
         int sideLen = side.size();
         return side.get(RandomUtils.uniform(RANDOM, sideLen));
+    }
+
+    /**
+     * Euclidean Distance to other room
+     */
+    public double distanceTo(Room otherRoom) {
+        return (middleX - otherRoom.middleX) * (middleX - otherRoom.middleX)
+                + (middleY - otherRoom.middleY) * (middleY - otherRoom.middleY);
     }
 
 }
