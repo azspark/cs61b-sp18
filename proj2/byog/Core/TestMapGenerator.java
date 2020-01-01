@@ -24,7 +24,7 @@ public class TestMapGenerator {
     public static void main(String[] args) {
         int testWidth = 80;
         int testHeight = 30;
-        MapGenerator mg = new MapGenerator("N199S", testWidth, testHeight);
+        MapGenerator mg = new MapGenerator("N213S", testWidth, testHeight);
         TERenderer ter = new TERenderer();
         ter.initialize(testWidth, testHeight);
         ter.renderFrame(mg.getWorld());

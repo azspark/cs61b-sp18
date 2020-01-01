@@ -105,12 +105,18 @@ public class Draw {
 
     public static void drawHorizontalLine(TETile[][] world, Position p, int length, TETile ts) {
         for (int i = 0; i < length; i++) {
+            if (ts == Tileset.WALL && world[p.x + i][p.y] == Tileset.FLOOR
+                    && !ifNearByNothing(world, new Position(p.x + i, p.y)))
+                continue;
             world[p.x + i][p.y] = ts;
         }
     }
 
     public static void drawVerticalLine(TETile[][] world, Position p, int length, TETile ts) {
         for (int j = 0; j < length; j++) {
+            if (ts == Tileset.WALL && world[p.x][p.y + j] == Tileset.FLOOR
+                    && !ifNearByNothing(world, new Position(p.x, p.y + j)))
+                continue;
             world[p.x][p.y + j] = ts;
         }
     }
@@ -129,5 +135,19 @@ public class Draw {
 
     public static void drawVerticalFloor(TETile[][] world, Position p, int length) {
         drawVerticalLine(world, p, length, Tileset.FLOOR);
+    }
+
+    private static boolean ifNearByNothing(TETile[][] world, Position p) {
+        for (int i = -1; i <= 1; i ++) {
+            for (int j = -1; j <=1; j++) {
+                if (p.x + i >= 0 && p.x + i < world.length && p.y + j >=0 && p.y + j < world[0].length) {
+                    if (world[p.x + i][p.y + j] == Tileset.NOTHING || p.x + i == 0 ||
+                            p.x + i == world.length - 1 || p.y + j ==0 || p.y + j == world[0].length - 1) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -16,7 +16,7 @@ public class Room {
     public Position position; // left bottom position
     private Random RANDOM;
     private int maxSize;
-    private static final int minSize = 4;
+    private static final int minSize = 3;
     private double middleX, middleY; // middle position of room, used in Minimum Spanning Tree
 
     private ArrayList<Position> upFloorEdge;

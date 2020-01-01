@@ -10,7 +10,7 @@ public class MapGenerator {
     private int height;
     private TETile[][] world;
     private Vector<Room> worldRooms;
-    private static final int ROOM_GENERATE_TIMES = 90;
+    private static final int ROOM_GENERATE_TIMES = 150;
 
     MapGenerator(String seed, int width, int height) {
         this.width = width;
@@ -57,9 +57,16 @@ public class MapGenerator {
             worldRooms.get(i).connect(world, worldRooms.get(connectTo[i]));
         }
 
-        for (int i = 0; i < worldRooms.size(); i++) {
-            worldRooms.get(i).drawRoomInnerSpaceOnWorld(world);
+        // add some random connection so that world won't be too lonely
+        for (int i = 0; i < worldRooms.size() / 7; i++) {
+            worldRooms.get(i).connect(world, worldRooms.get(i + 1));
         }
+
+        // Blow three line was used to clear some way inside the room caused by drawing hallway
+        // But now I have implemented some other ways to totally solve the problem, they are not necessary now.
+//        for (int i = 0; i < worldRooms.size(); i++) {
+//            worldRooms.get(i).drawRoomInnerSpaceOnWorld(world);
+//        }
     }
 
     public TETile[][] getWorld() {
