@@ -2,108 +2,156 @@ package lab9;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Stack;
 
-/**
- * Implementation of interface Map61B with BST as core data structure.
- *
- * @author Your name here
- */
-public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
 
     private class Node {
-        /* (K, V) pair stored in this Node. */
         private K key;
         private V value;
-
-        /* Children of this Node. */
+        private int size;
         private Node left;
         private Node right;
-
-        private Node(K k, V v) {
+        private Node (K k, V v, int s) {
             key = k;
             value = v;
+            size = s;
         }
     }
 
-    private Node root;  /* Root node of the tree. */
-    private int size; /* The number of key-value pairs in the tree */
+    private Node root;
 
-    /* Creates an empty BSTMap. */
-    public BSTMap() {
-        this.clear();
-    }
-
-    /* Removes all of the mappings from this map. */
     @Override
     public void clear() {
         root = null;
-        size = 0;
     }
 
-    /** Returns the value mapped to by KEY in the subtree rooted in P.
-     *  or null if this map contains no mapping for the key.
-     */
-    private V getHelper(K key, Node p) {
-        throw new UnsupportedOperationException();
+    @Override
+    public boolean containsKey(K key) {
+        return get(key) != null;
     }
 
-    /** Returns the value to which the specified key is mapped, or null if this
-     *  map contains no mapping for the key.
-     */
     @Override
     public V get(K key) {
-        throw new UnsupportedOperationException();
+        if (key == null) {
+            throw new IllegalArgumentException("Key can't be null");
+        }
+        return getHelper(key, root);
     }
 
-    /** Returns a BSTMap rooted in p with (KEY, VALUE) added as a key-value mapping.
-      * Or if p is null, it returns a one node BSTMap containing (KEY, VALUE).
-     */
-    private Node putHelper(K key, V value, Node p) {
-        throw new UnsupportedOperationException();
+    private V getHelper(K key, Node node) {
+        if (node == null) {
+            return null;
+        }
+        int cmp = key.compareTo(node.key);
+        if (cmp == 0) {
+            return node.value;
+        } else if (cmp < 0) {
+            return getHelper(key, node.left);
+        } else {
+            return getHelper(key, node.right);
+        }
     }
 
-    /** Inserts the key KEY
-     *  If it is already present, updates value to be VALUE.
-     */
-    @Override
-    public void put(K key, V value) {
-        throw new UnsupportedOperationException();
-    }
-
-    /* Returns the number of key-value mappings in this map. */
     @Override
     public int size() {
-        throw new UnsupportedOperationException();
+        return size(root);
     }
 
-    //////////////// EVERYTHING BELOW THIS LINE IS OPTIONAL ////////////////
+    private int size(Node node) {
+        if (node == null) {
+            return 0;
+        } else {
+            return node.size;
+        }
+    }
 
-    /* Returns a Set view of the keys contained in this map. */
+    @Override
+    public void put(K key, V value) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key can't be null");
+        }
+        root = putHelper(key, value, root);
+    }
+
+    private Node putHelper(K key, V value, Node node) {
+        if (node == null) {
+            return new Node(key, value, 1);
+        }
+        int cmp = key.compareTo(node.key);
+        if (cmp < 0) {
+            node.left = putHelper(key, value, node.left);
+        } else if (cmp > 0) {
+            node.right = putHelper(key, value, node.right);
+        } else {
+            node.value = value;
+        }
+        node.size = 1 + size(node.left) + size(node.right);
+        return node;
+    }
+
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        Set keySet = new HashSet<K>();
+
+        for (Iterator<K> it = iterator(); it.hasNext(); ) {
+            K k = it.next();
+            keySet.add(k);
+        }
+        return keySet;
     }
 
-    /** Removes KEY from the tree if present
-     *  returns VALUE removed,
-     *  null on failed removal.
-     */
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
-    /** Removes the key-value entry for the specified key only if it is
-     *  currently mapped to the specified value.  Returns the VALUE removed,
-     *  null on failed removal.
-     **/
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
+        return new BSTMapIterator();
+    }
+
+    private class BSTMapIterator implements Iterator<K> {
+
+        private Stack<Node> stack;
+        public BSTMapIterator() {
+            stack = new Stack<Node>();
+            Node curNode = root;
+            while (curNode != null) {
+                stack.push(curNode);
+                curNode = curNode.left;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        @Override
+        public K next() {
+            Node tempNode = stack.pop();
+            K returnKey = tempNode.key;
+            if (tempNode.right != null) {
+                tempNode = tempNode.right;
+                stack.push(tempNode);
+                tempNode = tempNode.left;
+                while (tempNode != null) {
+                    stack.push(tempNode);
+                    tempNode = tempNode.left;
+                }
+            }
+            return returnKey;
+        }
+    }
+
+    public void printInOrder() {
+
     }
 }
