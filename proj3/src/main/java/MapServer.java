@@ -36,6 +36,8 @@ public class MapServer {
      */
     public static final double ROOT_ULLAT = 37.892195547244356, ROOT_ULLON = -122.2998046875,
             ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
+
+    private static final int maxDepth = 7;
     /** Each tile is 256x256 pixels. */
     public static final int TILE_SIZE = 256;
     /** HTTP failed response. */
@@ -90,7 +92,7 @@ public class MapServer {
      **/
     public static void initialize() {
         graph = new GraphDB(OSM_DB_PATH);
-        rasterer = new Rasterer();
+        rasterer = new Rasterer(ROOT_ULLAT, ROOT_ULLON, ROOT_LRLAT, ROOT_LRLON, TILE_SIZE, maxDepth);
     }
 
     public static void main(String[] args) {

@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -17,10 +17,12 @@ import java.util.ArrayList;
  *
  * @author Alan Yao, Josh Hug
  */
-public class GraphDB {
+public class GraphDB implements AStarGraph<Long> {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
-
+    private Map<Long, Node> nodes = new HashMap<>();
+    private Map<Long, Set<WeightedEdge<Long>>> neighbors = new HashMap<>();
+    private KDTree kdTree;
     /**
      * Example constructor shows how to create and start an XML parser.
      * You do not need to modify this constructor, but you're welcome to do so.
@@ -40,6 +42,27 @@ public class GraphDB {
             e.printStackTrace();
         }
         clean();
+        kdTree = new KDTree(getNodes());
+    }
+
+    /**
+     * Returns a list of outgoing edges for V. Assumes V exists in this
+     * graph.
+     **/
+    @Override
+    public List<WeightedEdge<Long>> neighbors(Long v) {
+        Set<WeightedEdge<Long>> incidentSet = neighbors.get(v);
+        List<WeightedEdge<Long>> incidentList = new ArrayList<>();
+        for (WeightedEdge<Long> e : incidentSet) {
+            incidentList.add(e);
+        }
+
+        return incidentList;
+    }
+
+    @Override
+    public double estimatedDistanceToGoal(Long s, Long goal) {
+        return distance(s, goal);
     }
 
     /**
@@ -51,14 +74,48 @@ public class GraphDB {
         return s.replaceAll("[^a-zA-Z ]", "").toLowerCase();
     }
 
-    /**
-     *  Remove nodes with no connections from the graph.
-     *  While this does not guarantee that any two nodes in the remaining graph are connected,
-     *  we can reasonably assume this since typically roads are connected.
-     */
-    private void clean() {
-        // TODO: Your code here.
+    /** Adds a node to this graph, if it doesn't yet exist. **/
+    void addNode(Node node) {
+        if (!nodes.containsKey(node.id())) {
+            nodes.put(node.id(), node);
+            neighbors.put(node.id(), new HashSet<>());
+        }
     }
+
+    /** Adds an edge to this graph, if FROMID and TOID are in this graph. Does
+     *  not add additional edge if edge already exists.
+     **/
+    void addWeightedEdge(long fromID, long toID, String name) {
+        if (nodes.containsKey(fromID) && nodes.containsKey(toID)) {
+            Node from = nodes.get(fromID);
+            Node to = nodes.get(toID);
+            double weight = distance(from.lon(), from.lat(), to.lon(), to.lat());
+
+            Set<WeightedEdge<Long>> edgeSet = neighbors.get(fromID);
+            WeightedEdge<Long> weightedEdge = new WeightedEdge<>(from.id(), to.id(), weight);
+            weightedEdge.setName(name);
+            edgeSet.add(weightedEdge);
+        }
+    }
+
+    /**
+     * Removes vertices with 0 out-degree from graph. Note that this will
+     * cause issues if edges are not bidirectional.
+     **/
+    private void clean() {
+        List<Long> toRemove = new ArrayList<>();
+        for (long id : nodes.keySet()) {
+            if (neighbors(id).size() == 0) {
+                toRemove.add(id);
+            }
+        }
+
+        for (long id : toRemove) {
+            nodes.remove(id);
+            neighbors.remove(id);
+        }
+    }
+
 
     /**
      * Returns an iterable of all vertex IDs in the graph.
@@ -66,7 +123,11 @@ public class GraphDB {
      */
     Iterable<Long> vertices() {
         //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        Set<Long> vertices = new HashSet<>();
+        for (long id : nodes.keySet()) {
+            vertices.add(id);
+        }
+        return vertices;
     }
 
     /**
@@ -75,7 +136,14 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
-        return null;
+        Set<Long> adjacentVertexs = new HashSet<>();
+
+        Set<WeightedEdge<Long>> incidentSet = neighbors.get(v);
+        for (WeightedEdge<Long> e : incidentSet) {
+            adjacentVertexs.add(e.to());
+        }
+
+        return adjacentVertexs;
     }
 
     /**
@@ -136,7 +204,7 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        return kdTree.nearest(lon, lat);
     }
 
     /**
@@ -145,7 +213,10 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        if (!nodes.containsKey(v)) {
+            return 0.0;
+        }
+        return nodes.get(v).lon();
     }
 
     /**
@@ -154,6 +225,29 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        if (!nodes.containsKey(v)) {
+            return 0.0;
+        }
+        return nodes.get(v).lat();
+    }
+
+    /**
+     * Gets the name of a vertex (if applicable).
+     * @param v The id of the vertex.
+     * @return The name of the vertex.
+     */
+    public String name(long v) {
+        if (!nodes.containsKey(v)) {
+            return null;
+        }
+        return nodes.get(v).name();
+    }
+
+    protected List<Node> getNodes() {
+        List<Node> nodes = new ArrayList<>();
+        for(Map.Entry<Long, Node> nodeEntry: this.nodes.entrySet()){
+            nodes.add(nodeEntry.getValue());
+        }
+        return nodes;
     }
 }

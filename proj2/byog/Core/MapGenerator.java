@@ -58,7 +58,7 @@ public class MapGenerator {
         }
 
         // add some random connection so that world won't be too lonely
-        for (int i = 0; i < worldRooms.size() / 7; i++) {
+        for (int i = 0; i < worldRooms.size() / 8; i++) {
             worldRooms.get(i).connect(world, worldRooms.get(i + 1));
         }
 

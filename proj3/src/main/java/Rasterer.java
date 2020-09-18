@@ -8,9 +8,33 @@ import java.util.Map;
  * not draw the output correctly.
  */
 public class Rasterer {
-
-    public Rasterer() {
+    public double ROOT_ULLAT, ROOT_ULLON, ROOT_LRLAT, ROOT_LRLON;
+    public int maxDepth;
+    public int TILE_SIZE;
+    private double[] depthLon;
+    private double[] depthLat;
+    private double initLonResolution;
+    public Rasterer(double ROOT_ULLAT, double ROOT_ULLON, double ROOT_LRLAT, double ROOT_LRLON,
+                    int TILE_SIZE, int maxDepth) {
         // YOUR CODE HERE
+        this.ROOT_ULLAT = ROOT_ULLAT;
+        this.ROOT_ULLON = ROOT_ULLON;
+        this.ROOT_LRLAT = ROOT_LRLAT;
+        this.ROOT_LRLON = ROOT_LRLON;
+        this.TILE_SIZE = TILE_SIZE;
+        this.maxDepth = maxDepth;
+
+        depthLon = new double[maxDepth + 1];
+        depthLat = new double[maxDepth + 1];
+        initLonResolution = (ROOT_LRLON - ROOT_ULLON) / TILE_SIZE;
+        double recurLon = ROOT_LRLON - ROOT_ULLON;
+        double recurLat = ROOT_ULLAT - ROOT_LRLAT;
+        for (int i = 0; i <= maxDepth; i++) {
+            depthLon[i] = recurLon;
+            depthLat[i] = recurLat;
+            recurLon /= 2;
+            recurLat /= 2;
+        }
     }
 
     /**
@@ -43,9 +67,90 @@ public class Rasterer {
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         // System.out.println(params);
+        if (!validQuery(params)) {
+            return invalidOutPut();
+        }
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+        int depth = getDepth(params);
+        results.put("query_success", true);
+        results.put("depth", depth);
+        setRender(depth, params, results);
+//        System.out.println(results);
+        return results;
+    }
+
+    private int getDepth(Map<String, Double> params) {
+        double lonPP = (params.get("lrlon") - params.get("ullon")) / params.get("w");
+        int depth = (int) Math.ceil(log2(initLonResolution / lonPP));
+        if (depth > maxDepth) {
+            depth = maxDepth;
+        }
+        if (depth < 0) {
+            depth = 0;
+        }
+        return depth;
+    }
+
+    private double log2(double n) {
+        return Math.log(n) / Math.log(2);
+    }
+
+    private void setRender(int depth, Map<String, Double> params, Map<String, Object> results) {
+        double lonUnit = depthLon[depth];
+        double latUnit = depthLat[depth];
+        int startLonIdx = (int) Math.floor((params.get("ullon") - ROOT_ULLON) / lonUnit);
+        int endLonIdx = (int) Math.floor((params.get("lrlon") - ROOT_ULLON) / lonUnit);
+        int startLatIdx = (int) Math.floor((ROOT_ULLAT - params.get("ullat")) / latUnit);
+        int endLatIdx = (int) Math.floor((ROOT_ULLAT - params.get("lrlat")) / latUnit);
+//        System.out.println("" + startLatIdx + endLatIdx);
+        String[][] renderGrid = new String[endLatIdx - startLatIdx + 1][endLonIdx - startLonIdx + 1];
+        for (int i = startLatIdx; i <= endLatIdx; i++) {
+            for (int j = startLonIdx; j <= endLonIdx; j++) {
+                renderGrid[i - startLatIdx][j - startLonIdx] = String.format("d%d_x%d_y%d.png", depth, j, i);
+            }
+        }
+        double rasterUlLon = ROOT_ULLON + startLonIdx * lonUnit;
+        double rasterLrLon = ROOT_ULLON + (endLonIdx + 1) * lonUnit;
+        double rasterUlLat = ROOT_ULLAT - startLatIdx * latUnit;
+        double rasterLrLat = ROOT_ULLAT - (endLatIdx + 1) * latUnit;
+        results.put("render_grid", renderGrid);
+        results.put("raster_ul_lon", rasterUlLon);
+        results.put("raster_ul_lat", rasterUlLat);
+        results.put("raster_lr_lon", rasterLrLon);
+        results.put("raster_lr_lat", rasterLrLat);
+    }
+
+    private boolean validQuery(Map<String, Double> params) {
+        if (params.get("ullon") > params.get("lrlon")) {
+            return false;
+        }
+        if (params.get("lrlat") > params.get("ullat")) {
+            return false;
+        }
+        if (params.get("lrlat") > ROOT_ULLAT) {
+            return false;
+        }
+        if (params.get("ullat") < ROOT_LRLAT) {
+            return false;
+        }
+        if (params.get("ullon") > ROOT_LRLON) {
+            return false;
+        }
+        if (params.get("lrlon") < ROOT_ULLON) {
+            return false;
+        }
+        return true;
+    }
+
+    private Map<String, Object> invalidOutPut() {
+        Map<String, Object> results = new HashMap<>();
+        results.put("query_success", false);
+        results.put("render_grid", null);
+        results.put("raster_ul_lon", null);
+        results.put("raster_ul_lat", null);
+        results.put("raster_lr_lon", null);
+        results.put("raster_lr_lat", null);
+        results.put("depth", null);
         return results;
     }
 
